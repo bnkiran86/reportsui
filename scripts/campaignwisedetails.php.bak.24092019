@@ -1,0 +1,110 @@
+<?php
+
+	include_once(dirname(__FILE__).'/classes/users.php');
+	$objUser = new User();
+
+	$loginDetails = $objUser->fnGetLoginUserDetails();
+
+	if(!$loginDetails['login_status']) {
+		header("Location: ../login.html");
+	}
+
+	
+	$data = array();
+
+	
+
+
+	//Default values
+	$fromDate = date("Y-m")."-01";
+	$toDate = date("Y-m-d", strtotime(" -1 days") );
+	$campaigntag = "";
+
+	if( 
+		(isset($_POST['fromdate']) && $_POST['fromdate'] != "")  &&
+		(isset($_POST['todate']) && $_POST['todate'] != "")
+	) {
+		$fromDate = date("Y-m-d", strtotime(htmlentities(filter_var($_POST['fromdate'], FILTER_SANITIZE_STRING)) ) );
+		$toDate = date("Y-m-d", strtotime(htmlentities(filter_var($_POST['todate'], FILTER_SANITIZE_STRING)) ) );
+	}
+
+
+	if((isset($_POST['campaigntag']) && $_POST['campaigntag'] != "")) {
+		$campaigntag = htmlentities(addslashes(filter_var(trim($_POST['campaigntag']), FILTER_SANITIZE_STRING)));
+	}
+	
+	$server = $loginDetails['server'];
+	$username = $loginDetails['username'];
+
+
+	
+	
+	$currentMonth = date("mY");
+
+	$mainPath = "/mis_reportlogs/".$currentMonth."/".$server."/";
+
+	//Use pandas to filter out campaignwise files for the logged in user
+	//echo "python ".dirname(__FILE__)."/pyscripts/usercampaigns.py ".$server." ".$username." ".$fromDate." ".$toDate." ".urlencode($campagintag);
+	$filteredDetails = exec("python ".dirname(__FILE__)."/pyscripts/usercampaigns.py ".$server." ".$username." ".$fromDate." ".$toDate." ".urlencode($campaigntag)  );
+
+	//$filteredDetails = "/tmp/LOGSUI_FILTERED_RESULT_TqIkun577t.csv";
+
+	$csv = array_map(function($v){return str_getcsv($v, "\t");}, file($filteredDetails));
+
+	foreach($csv as $details) {
+		//echo "<pre>";print_r($details);echo "</pre>";
+
+		$tmp = explode("/",$details[5]);
+
+		//echo "<pre>";print_r(array_slice($tmp, -3, 3, true));echo "</pre>";
+
+		//Get last 3 elements of array ie., date, username & filename
+		$linkIdentifier = implode("-",array_slice($tmp, -3, 3, true));
+
+		//$linkIdentifier = "";
+		$temp = array();
+		//$temp[] = "<input type='checkbox' onclick='fnSelectForExport(this,this.id)' id='".base64_encode($linkIdentifier)."'  name='".base64_encode($linkIdentifier)."' />";
+		$temp[] = "";
+		$temp[] = $details[1];
+		$temp[] = $details[2];
+		$temp[] = $details[4];
+		$temp[] = "<a href='downloadlog.php?i=".base64_encode($linkIdentifier)."'>Download</a>";
+
+
+		$data[] = $temp;
+	}
+	
+
+	/*
+	$_POST['draw'] = '10';
+	$output = array(
+		"draw"    => intval($_POST["draw"]),
+		"recordsTotal"  =>  count($data),
+		"recordsFiltered" => count($data),
+		"data"    => $data
+	);
+	*/
+
+	$output = array(
+			"sEcho" => "50",
+			"iTotalRecords" => count($data),
+			"iTotalDisplayRecords" => count($data),
+			"aaData" => array()
+		);
+
+
+
+	//Sort the Data
+	if(!empty($data)) {
+		$tmp_len = count($data);
+		for($i=0;$i<$tmp_len;$i++) {
+			if(isset($data[$i]) && !empty($data[$i]))
+				$output['aaData'][] = $data[$i];
+		}
+	}
+
+
+	echo json_encode($output);
+
+	//@unlink($filteredDetails);
+?>

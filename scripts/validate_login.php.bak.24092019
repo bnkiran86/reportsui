@@ -1,0 +1,27 @@
+<?php
+
+if($_SERVER["REQUEST_METHOD"] == "POST") {
+	if(isset($_POST['ajaxCall']) && $_POST['ajaxCall'] == "yes") {
+		include_once("classes/users.php");
+		$objUser = new User();
+
+		$username = addslashes($_POST['username']);
+		$password = addslashes($_POST['password']);
+
+		$result = $objUser->fnAuthenticate($username, $password);
+
+		//echo $result;exit;
+
+		if($result != "" &&  $result != "NO_USER_AVAILABLE") {
+			echo "SUCCESS";
+			$_SESSION['LOGSUI']['login_status'] = '1';
+			$_SESSION['LOGSUI']['username'] = $username;
+			$_SESSION['LOGSUI']['server'] = $result;
+		} else
+			echo "FAILURE";
+	} else
+		die("Access Denied");
+} else
+	die("Access Denied");
+?>
+

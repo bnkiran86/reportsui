@@ -1,0 +1,63 @@
+<?php
+
+
+	$username = (isset($_GET['username'])) ?  addslashes(trim($_GET['username'])) : "vedantutrans";
+	$server = (isset($_GET['server'])) ?  addslashes(trim($_GET['server'])) : "SMSV";
+	$fromdate = ( isset($_GET['fromdate']) && !empty($_GET['fromdate']) ) ?  addslashes(trim($_GET['fromdate'])) : "NA";
+	$todate = ( isset($_GET['todate']) && !empty($_GET['todate']) ) ?  addslashes(trim($_GET['todate'])) : "NA";
+	$selectiontype = (isset($_GET['selectiontype'])) ?  addslashes(strtoupper(trim($_GET['selectiontype']))) : "";
+	$searchdate = ( isset($_GET['searchdate']) && !empty($_GET['searchdate']) ) ?  addslashes(trim($_GET['searchdate'])) : "NA";
+
+?>
+
+<html lang="en">
+<meta http-equiv="content-type" content="text-html; charset=utf-8">
+<body>
+<!-- Progress bar holder -->
+<div id="progress" style="width:500px;border:1px solid #ccc;"></div>
+<!-- Progress information -->
+<div id="information" style="width"></div>
+
+<?php
+	if($username == "" || $server == "" || $selectiontype == "") {
+		echo '<script language="javascript">document.getElementById("progress").innerHTML="<div style=\"width:100%;background-color:#ddd;background-image:url(../pbar-ani.gif);\">&nbsp;</div>";document.getElementById("information").innerHTML="Access denied, invalid request";</script>';
+		$status = '3';
+		$reason = 'Invalid request';
+	} else if($selectiontype == "SPECIFICADATE" && $searchdate == "NA") {
+		echo '<script language="javascript">document.getElementById("progress").innerHTML="<div style=\"width:100%;background-color:#ddd;background-image:url(../pbar-ani.gif);\">&nbsp;</div>";document.getElementById("information").innerHTML="Access denied, invalid request";</script>';
+		$status = '3';
+		$reason = 'Invalid request';
+	} else if($selectiontype == "DATERANGE" && ($fromdate == "NA" || $todate == "NA" )) {
+		echo '<script language="javascript">document.getElementById("progress").innerHTML="<div style=\"width:100%;background-color:#ddd;background-image:url(../pbar-ani.gif);\">&nbsp;</div>";document.getElementById("information").innerHTML="Access denied, invalid request";</script>';
+		$status = '3';
+		$reason = 'Invalid request';
+	} else {
+		$status = '0';
+		$reason = '';
+	}
+
+
+	if($status == "0") {
+		echo '<script language="javascript">document.getElementById("progress").innerHTML="<div style=\"width:20%;background-color:#ddd;background-image:url(../pbar-ani.gif);\">Processing....</div>";</script>';
+		//Send output to browser immediately
+		flush();
+
+		$pyParams = $server." ".$username." ".$selectiontype." ".$searchdate." ".$fromdate." ".$todate;
+		//echo "\n"."python ".dirname(__FILE__)."/pyscripts/detailedlogsgenerator.py ".$pyParams;exit;
+		$pyResp = trim(shell_exec("python ".dirname(__FILE__)."/pyscripts/detailedlogsgenerator.py ".$pyParams));
+
+		if($pyResp == "INVALID_ACCESS") {
+			$status  = '3';
+			$response = "No Data Available";
+		} else if($pyResp == "INVALID_REQUEST") {
+			$status = '3';
+			$response = "Invalid Request";
+		} else {
+			$status = '2';
+			$response = "<a href='http://logsui.mtamm.com/downloadlog.php?d=".base64_encode($pyResp)."'>Click here to download</a>";
+		}
+
+		echo '<script language="javascript">document.getElementById("progress").innerHTML="<div style=\"width:100%;background-color:#ddd;background-image:url(../pbar-ani.gif);\">&nbsp;</div>";document.getElementById("information").innerHTML="'.$response.'";</script>';
+	}
+	die();
+?>

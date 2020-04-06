@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>Cloads | Summary & Logs MIS</title>
+		<!-- Tell the browser to be responsive to screen width -->
+		<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
+		<!-- Bootstrap 3.3.5 -->
+		<link rel="stylesheet" href="media/css/bootstrap/css/bootstrap.min.css">
+
+		<!-- Font Awesome -->
+		<link rel="stylesheet" href="media/css/font-awesome-4.6.1/css/font-awesome.min.css">
+		<link rel="stylesheet" href="media/css/bootstrap/css/jquery-jvectormap-1.2.2.css">
+		<link rel="stylesheet" href="media/css/dist/css/AdminLTE.min.css">
+		<!-- AdminLTE Skins. Choose a skin from the css/skins, folder instead of downloading all of them to reduce the load. -->
+		<link rel="stylesheet" href="media/css/dist/css/skins/_all-skins.min.css">
+
+		<script src="media/js/plugins/jQuery/jQuery-2.1.4.min.js"></script>
+
+		<!-- Bootstrap 3.3.5 -->
+		<script src="media/js/plugins/jQuery/bootstrap.js"></script>
+		<script src="media/js/plugins/jQuery/bootbox.min.js"></script>
+		<script src="media/js/dist/js/app.min.js"></script>
+
+		<script src="media/js/dist/js/demo.js"></script>
+		<script src="media/js/dist/js/jquery-loading-overlay-master/src/loadingoverlay.min.js"></script>
+
+		<style>
+			.sidebar-menu > li.active > a
+			{
+				background-color:#63686B !important;
+				color:white !important;
+				font-weight:bold;
+			}
+			.active
+			{
+				background-color:green;
+			}
+		</style>
+
+		<script type="text/javascript">
+		
+			$(document).ready(function() {
+				$("tr#msg_html").hide();
+				$("#username").val("");
+				$("#password").val("");
+			});
+
+			//Login on Enter Key Press
+			$(document).keypress(function(event){
+				var keycode = (event.keyCode ? event.keyCode : event.which);
+				if(keycode == '13'){
+					fnValidateLogin();
+				}
+			});
+
+			
+
+			function fnValidateLogin(){
+				var username = $("#username").val();
+				var password = $("#password").val();
+
+				$("tr#msg_html").show();
+				if(username!="" && password!=""){
+					$("td#msg_text").html("Validating.....");
+					//$("input#submit").attr("disabled","true");
+					var urldata = "ajaxCall=yes&username="+username+"&password="+password;
+					$.ajax({
+						type : "POST",
+						url : "scripts/validate_login.php",
+						data : urldata,
+						dataType : "html",
+						success : function(response) {
+								var resp_HTML = $.trim(response);
+								if(resp_HTML == "SUCCESS") {
+									window.location.href = "summary.php";
+								} else {
+									$("td#msg_text").html("Invalid Username & Password");
+								}
+							}
+					});
+				} else {
+					$("td#msg_text").html("Provide Username & Password");
+				}
+			}
+
+	
+		</script>
+	</head>
+
+	<body class="hold-transition skin-blue sidebar-mini">
+		<!-- Content Wrapper. Contains page content -->
+		<div class="wrapper">
+			<!-- Content Header (Page header) -->       
+			<header class="main-header">
+				<a href="login.html" class="logo">
+					<!-- mini logo for sidebar mini 50x50 pixels -->
+					<span class="logo-mini"><b><font size=3px></font></b></span>
+					<!-- logo for regular state and mobile devices -->
+					<span class="logo-lg">&nbsp;</span>
+				</a>
+
+				<!-- Header Navbar: style can be found in header.less -->
+				<nav class="navbar navbar-static-top" role="navigation">
+					
+					<a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+						<span class="sr-only">Toggle navigation</span>
+					</a>	
+				</nav>
+			</header>
+
+			<aside class="main-sidebar">
+			</aside>
+			<!-- Main content -->
+			<div class="content-wrapper">
+				<section class="content">
+					<center>
+						<div class="">
+							<table class="table col-xs-12 col-md-6 col-lg-6">
+								<tr>
+									<td style="text-align:right">&nbsp;</td>
+									<td style="text-align:right">&nbsp;</td>	
+									<td style="text-align:left;"><span style="font-size:25px;font-weight:bold;padding-left:150px">Welcome to SMS MIS</span></td>
+								</tr>
+								<tr id="msg_html" style="display:none">
+									<td style="text-align:right">&nbsp;</td>
+									<td style="text-align:right">&nbsp;</td>
+									<td style="text-align:left;font-weight:bold;font-size:18px;padding-left:200px" id="msg_text">&nbsp;</td>
+								</tr>
+							</table>
+							<table class="table table-bordered col-xs-12 col-md-6 col-lg-6">
+								<tr>
+									<td style="text-align:right">Username:</td>
+									<td><input type="text"  name="username" id="username"/></td>
+								</tr>
+								<tr>
+									<td style="text-align:right">Password:</td>
+									<td><input type="password"  name="password" id="password"/></td>
+								</tr>
+								<tr>
+									<td style="text-align:right">&nbsp;</td>
+									<td align="left">
+										<input type="button" class="btn btn-success" value='Login' onclick="fnValidateLogin()">
+									</td>
+								</tr>
+							</table>
+						</div>
+					</center>
+	
+					<!-- Small boxes (Stat box) -->
+					<div class="row">
+					</div><!-- /.row -->
+	
+					<!-- Main row -->
+					<div class="row">
+					</div><!-- /.row (main row) -->
+	
+				</section><!-- /.content -->
+			</div><!-- /.content-wrapper -->
+
+			<footer class="main-footer">
+				<div class="pull-right hidden-xs">
+					<b>Version</b> 2.1.0
+				</div>
+				<!-- <strong>Copyright &copy; 2014-2015 <a href="http://icsportal.in">Insight Consultancy Services</a>,</strong> All rights reserved.--><br>
+			</footer>
+	
+	
+			<!-- Add the sidebar's background. This div must be placed immediately after the control sidebar -->
+			<div class="control-sidebar-bg"></div>
+		</div><!--wrapper -->
+	</body>
+</html>

@@ -1,0 +1,41 @@
+<?php
+
+	//Users Config file
+	include_once("/var/www/logsui_usersconfig.php");
+	
+	//User Information Class
+	include_once(dirname(__FILE__)."/session.php");
+
+	class User extends Session {
+		static private $objSesion = "";
+		var $returnMSg = "";
+		var $returnArray  = "";
+
+		function __construct() {
+			$this->objSession = new Session();
+		}
+
+		function fnAuthenticate($username, $password) {
+			global $configUsers;			
+			
+			if(isset($configUsers[$username.":".$password])) {
+				return $configUsers[$username.":".$password];
+			} else {
+				return "NO_USER_AVAILABLE";
+			}
+		}
+
+		function fnGetLoginUserDetails() {
+			unset($this->returnArray);
+
+			if(isset($_SESSION['LOGSUI']['login_status']) && $_SESSION['LOGSUI']['login_status'] == "1") {
+				$this->returnArray['login_status'] = true;
+				$this->returnArray['username'] = $_SESSION['LOGSUI']['username'];
+				$this->returnArray['server'] = $_SESSION['LOGSUI']['server'];
+			} else
+				$this->returnArray['login_status'] = false;
+
+			return $this->returnArray;
+		}
+	}
+?>
